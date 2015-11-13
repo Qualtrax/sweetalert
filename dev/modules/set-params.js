@@ -1,7 +1,8 @@
 var alertTypes = ['error', 'warning', 'info', 'success', 'input', 'prompt'];
 
 import {
-  isIE8
+  isIE8,
+  inputTagNameSetting
 } from './utils';
 
 import {
@@ -42,15 +43,19 @@ var setParameters = function(params) {
   /*
    * Custom class
    */
-  if (params.customClass) {
-    addClass(modal, params.customClass);
-    modal.setAttribute('data-custom-class', params.customClass);
-  } else {
-    // Find previously set classes and remove them
-    let customClass = modal.getAttribute('data-custom-class');
-    removeClass(modal, customClass);
-    modal.setAttribute('data-custom-class', '');
-  }
+   if (params.customClass) {
+     var currentClasses = modal.getAttribute('data-custom-class');
+     if (currentClasses !== "")
+       removeClass(modal, currentClasses);
+
+     addClass(modal, params.customClass);
+     modal.setAttribute('data-custom-class', params.customClass);
+   } else {
+     // Find previously set classes and remove them
+     let customClass = modal.getAttribute('data-custom-class');
+     removeClass(modal, customClass);
+     modal.setAttribute('data-custom-class', '');
+   }
 
   /*
    * Icon
@@ -105,10 +110,17 @@ var setParameters = function(params) {
 
       case 'input':
       case 'prompt':
-        $input.setAttribute('type', params.inputType);
+        if (inputTagNameSetting.isInput()) {
+          $input.setAttribute('type', params.inputType);
+          addClass(modal, 'show-input');
+        } else if (inputTagNameSetting.isTextarea()) {
+          $input.setAttribute('rows', params.textareaRows);
+          addClass(modal, 'show-textarea');
+        }
+
         $input.value = params.inputValue;
         $input.setAttribute('placeholder', params.inputPlaceholder);
-        addClass(modal, 'show-input');
+
         setTimeout(function () {
           $input.focus();
           $input.addEventListener('keyup', swal.resetInputError);
